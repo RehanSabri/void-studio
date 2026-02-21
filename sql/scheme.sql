@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
   created_at   DATETIME        DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+  INDEX idx_ip         (ip_address),
   INDEX idx_email      (email),
   INDEX idx_status     (status),
   INDEX idx_created_at (created_at)
@@ -43,6 +44,6 @@ CREATE TABLE IF NOT EXISTS admin_users (
 INSERT INTO admin_users (username, password, email) VALUES
 (
   'admin',
-  '$2y$12$KIXQv7T6C3Vz0w5V3D2GcOH8FZq9mJ6N1R5sYpXnMvWeLdTuA8QoK',
+  '$2y$10$fBMc.6magotsKENgtMv73.TW4h5iLBjGaWU5Fb569QQpO2kQX3w16',
   'admin@void.studio'
-);
+) ON DUPLICATE KEY UPDATE id=id;

@@ -5,9 +5,11 @@
 // ─────────────────────────────────────────────────
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');           // tighten in production
+$allowedOrigin = getenv('CORS_ORIGIN') ?: '*';
+header('Access-Control-Allow-Origin: ' . $allowedOrigin);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Vary: Origin');
 
 // Handle CORS preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -25,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/../config/db.php';
 
 // ─── Rate limiting (simple: 3 submissions per IP per hour) ───
-function check_rate_limit(PDO $pdo, string $ip): bool {
+function check_rate_limit(PDO $pdo, string $ip): bool
+{
     $stmt = $pdo->prepare(
         "SELECT COUNT(*) FROM contact_submissions
          WHERE ip_address = ? AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)"
@@ -38,8 +41,8 @@ function check_rate_limit(PDO $pdo, string $ip): bool {
 $body = json_decode(file_get_contents('php://input'), true);
 
 // Support both JSON body and standard form POST
-$name    = trim($body['name']    ?? $_POST['name']    ?? '');
-$email   = trim($body['email']   ?? $_POST['email']   ?? '');
+$name = trim($body['name'] ?? $_POST['name'] ?? '');
+$email = trim($body['email'] ?? $_POST['email'] ?? '');
 $project = trim($body['project'] ?? $_POST['project'] ?? '');
 $message = trim($body['message'] ?? $_POST['message'] ?? '');
 
@@ -69,7 +72,7 @@ if (!empty($errors)) {
 
 // ─── Rate limit check ────────────────────────────────────────
 $pdo = get_db();
-$ip  = get_client_ip();
+$ip = get_client_ip();
 
 if (!check_rate_limit($pdo, $ip)) {
     http_response_code(429);
@@ -89,15 +92,16 @@ try {
             (:name, :email, :project, :message, :ip, :ua)"
     );
     $stmt->execute([
-        ':name'    => mb_substr($name,    0, 150),
-        ':email'   => mb_substr($email,   0, 255),
+        ':name' => mb_substr($name, 0, 150),
+        ':email' => mb_substr($email, 0, 255),
         ':project' => mb_substr($project, 0, 200),
         ':message' => $message,
-        ':ip'      => $ip,
-        ':ua'      => mb_substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),
+        ':ip' => $ip,
+        ':ua' => mb_substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),
     ]);
     $insertId = $pdo->lastInsertId();
-} catch (PDOException $e) {
+}
+catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Could not save your message. Please try again.']);
     exit;
