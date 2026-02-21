@@ -70,21 +70,20 @@ if (!empty($errors)) {
     exit;
 }
 
-// ─── Rate limit check ────────────────────────────────────────
-$pdo = get_db();
-$ip = get_client_ip();
-
-if (!check_rate_limit($pdo, $ip)) {
-    http_response_code(429);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Too many submissions. Please try again later.'
-    ]);
-    exit;
-}
-
-// ─── Save to database ────────────────────────────────────────
+// ─── DB connect + rate limit + save ──────────────────────────
 try {
+    $pdo = get_db();
+    $ip = get_client_ip();
+
+    if (!check_rate_limit($pdo, $ip)) {
+        http_response_code(429);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Too many submissions. Please try again later.'
+        ]);
+        exit;
+    }
+
     $stmt = $pdo->prepare(
         "INSERT INTO contact_submissions
             (name, email, project_type, message, ip_address, user_agent)
