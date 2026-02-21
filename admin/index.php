@@ -8,7 +8,7 @@ require_once __DIR__ . '/../config/db.php';
 
 // Auth guard
 if (empty($_SESSION['admin_id'])) {
-    header('Location: login.php');
+    header('Location: /admin/login.php');
     exit;
 }
 
@@ -18,7 +18,7 @@ $pdo = get_db();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $stmt = $pdo->prepare("UPDATE contact_submissions SET status=? WHERE id=?");
     $stmt->execute([$_POST['status'], (int)$_POST['id']]);
-    header('Location: index.php');
+    header('Location: /admin/index.php');
     exit;
 }
 
@@ -26,14 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $pdo->prepare("DELETE FROM contact_submissions WHERE id=?")
         ->execute([(int)$_POST['delete_id']]);
-    header('Location: index.php');
+    header('Location: /admin/index.php');
     exit;
 }
 
 // ─── Handle logout ───────────────────────────────
 if (isset($_GET['logout'])) {
     session_destroy();
-    header('Location: login.php');
+    header('Location: /admin/login.php');
     exit;
 }
 

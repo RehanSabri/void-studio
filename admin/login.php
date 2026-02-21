@@ -8,7 +8,7 @@ require_once __DIR__ . '/../config/db.php';
 
 // Already logged in → redirect
 if (!empty($_SESSION['admin_id'])) {
-    header('Location: index.php');
+    header('Location: /admin/index.php');
     exit;
 }
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = ?")
                 ->execute([$user['id']]);
 
-            header('Location: index.php');
+            header('Location: /admin/index.php');
             exit;
         }
     }
